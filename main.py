@@ -1,22 +1,34 @@
-import requests
 import os
 
-api_key = "41cb9da3d805141f5d00f3c73dc64c8b"# os.getenv("WEATHER_API_KEY")
-MY_LAT = 51.507351
-MY_LON = -0.127758
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+API_KEY = os.getenv("MY_WEATHER_API_KEY")  # Own API key from "https://openweathermap.org/" weather api provider
+LATITUDE = os.getenv("MY_LATITUDE")  # Latitude "https://www.latlong.net/"
+LONGITUDE = os.getenv("MY_LONGITUDE")  # Longitude
 
 parameters = {
-    "lat": MY_LAT,
-    "lon": MY_LON,
-    "appid": api_key,
-    "cnt": 4,
+    "lat": LATITUDE,
+    "lon": LONGITUDE,
+    "appid": API_KEY,
+    "cnt": 4,  # cnt parameter to get four weather response with three hours interval
 }
 
-response = requests.get("https://api.openweathermap.org/data/2.5/forecast", params=parameters)
-response.raise_for_status()
-weather_data = response.json()
-for interval in weather_data["list"]:
-    code = interval["weather"][0]["id"]
-    print(code)
-    if 500 <= code <= 700:
-        print("It's raining")
+
+def is_raining() -> bool:
+    response = requests.get("https://api.openweathermap.org/data/2.5/forecast", params=parameters)
+    response.raise_for_status()
+    weather_data = response.json()
+    for interval in weather_data["list"]:
+        code = interval["weather"][0]["id"]
+        if 500 <= code <= 700:  # Go through "https://openweathermap.org/weather-conditions#Weather-Condition-Codes-2"
+            # to understand about api weather codes
+            return True
+        else:
+            return False
+
+
+if is_raining():
+    print("It's rain today, don't forget to bring umbrella☔️")
